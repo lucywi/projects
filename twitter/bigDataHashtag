@@ -1,0 +1,61 @@
+library(tm)
+
+bigdata <- searchTwitter("# bigdata", n = 1000)
+
+# conversion from list to data frame 
+bigdata.df <- do.call( rbind, lapply( bigdata, as.data.frame)) 
+
+# write to csv; fill in the … with a valid path
+write.csv( bigdata.df, "/Users/Lucy/Desktop/twitter/social media mining with r/bigdata.csv")
+
+# build a corpus
+bigdata_list <- sapply(bigdata, function(x) x$getText())
+bigdata_corpus <- Corpus(VectorSource(bigdata_list))
+
+# create word cloud
+library(NLP)
+library(wordcloud)
+library(RColorBrewer)
+# wordcloud( bigdata_corpus)
+
+# create a document-term matrix
+bigdata_corpus <- tm_map(bigdata_corpus, content_transformer(tolower))
+bigdata_corpus <- tm_map(bigdata_corpus, removePunctuation)
+bigdata_corpus <- tm_map(bigdata_corpus, function(x) removeWords(x, stopwords()))
+bigdata.tdm <- TermDocumentMatrix( bigdata_corpus) 
+bigdata.tdm
+
+# most popular words
+findFreqTerms( bigdata.tdm, lowfreq = 10)
+
+# terms that co-occur
+findAssocs( bigdata.tdm, 'people', 0.50)
+
+# HIERARCHICAL AGGLOMERATIVE CLUSTERING
+# Remove sparse terms from the term-document matrix 
+bigdata2.tdm <-removeSparseTerms(bigdata.tdm, sparse = 0.92) 
+
+# Convert the term-document matrix to a data frame 
+bigdata2.df <- as.data.frame(inspect(bigdata2.tdm)
+
+# inspect dimensions of the data frame
+nrow(bigdata2.df)
+ncol(bigdata2.df)
+  
+# scale the data
+bigdata2.df.scale <- scale(bigdata2.df)
+
+# Create the distance matrix 
+bigdata.dist <- dist(bigdata2.df.scale, method = "euclidean") 
+
+# Cluster the data
+bigdata.fit <- hclust(bigdata.dist, method ="ward.D") 
+
+# Visualize the result 
+plot(bigdata.fit, main ="Cluster - Big Data") 
+
+# An example with five (k = 5) clusters 
+groups <- cutree( bigdata.fit, k = 5) 
+
+# Dendogram with blue clusters (k = 5). 
+rect.hclust( bigdata.fit, k = 5, border = "blue")
