@@ -1,0 +1,50 @@
+# Inferential Data Analysis Using Simulation
+
+# Synopsis
+The exponential distribution can be simulated in R with rexp(n, lambda) where lambda is the rate parameter. The mean of exponential distribution is 1/lambda and the standard deviation is also also 1/lambda. Set lambda = 0.2 for all of the simulations. This simulation looks at the properties of the distribution of the mean of 40 exponential(0.2)s. 
+
+# Data Processing
+Define the variables: 
+```{r}
+n <- 40
+lamda <- 0.2
+sim <- 1000
+```
+
+The theoretical values:
+```{r}
+theoreticalMean <- 1/lamda
+theoreticalStandardDeviation <- ((1/lamda) * (1/sqrt(n)))
+theoreticalVariance <- theoreticalStandardDeviation^2
+```
+
+The simulation values:
+```{r}
+data <- matrix(rexp(n*sim, lamda), sim)
+rowMeans <- apply(data, 1, mean)
+simulationMean <- mean(rowMeans)
+simulationStandardDeviation <- sd(rowMeans)
+simulationVariance <- var(rowMeans)
+```
+
+# Results
+1. Show where the distribution is centered at and compare it to the theoretical center of the distribution.
+```{r}
+theoreticalMean
+simulationMean
+```
+The theoretical center of the distribution is 5, whereas the simulated center is 4.976017.
+
+2. Show how variable it is and compare it to the theoretical variance of the distribution.
+```{r}
+theoreticalStandardDeviation
+simulationStandardDeviation
+```
+The theoretical variance of the distribution is 0.7905694, whereas the simulated variance is 0.7960064.
+
+3. Show that the distribution is approximately normal. Focus on the difference between the distribution of a large collection of random exponentials and the distribution of a large collection of averages of 40 exponentials.
+```{r}
+library(ggplot2)
+dfrm <- data.frame(rowMeans)
+ggplot(dfrm,aes(x=rowMeans)) +  geom_histogram(binwidth = lambda, color="black",aes(y = ..density..)) +  labs(y="Density")  +  stat_function(fun=dnorm,args=list(mean=simulationMean, sd=simulationStandardDeviation),color = "red", size = 2.0)
+```
