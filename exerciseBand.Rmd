@@ -1,0 +1,79 @@
+# Load the data 
+```{r}
+data <- read.csv("C:/Users/Jasmina/Desktop/1 Lucy/1 RR/activity.csv")
+```
+
+# Make a histogram of the total number of steps taken each day
+```{r}
+dailySteps <- tapply(data$steps, data$date, sum)
+hist(dailySteps, main="Total Steps Per Day", xlab="Total Steps Per Day")
+```
+
+# Calculate and report the mean and median total number of steps taken per day
+```{r}
+mean(dailySteps, na.rm=T)
+median(dailySteps, na.rm=T)
+```
+
+# Make a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+```{r}
+intervalSteps <- tapply(data$steps, data$interval, mean, na.rm=T)
+interval <- as.numeric(levels(factor(data$interval)))
+averageSteps <- plot(interval, intervalSteps, type = "l", main="Average Daily Activity Pattern",
+ylab="Average Number of Steps")
+```
+
+# Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps
+```{r}
+intervalMaxSteps <- data.frame(interval, intervalSteps)
+max <- intervalMaxSteps[intervalMaxSteps[, 2] == max(intervalSteps), ][1]
+max
+```
+
+# Calculate and report the total number of missing values in the dataset
+```{r}
+missingValues <- sum(as.numeric(is.na(data$steps)))
+missingValues
+```
+
+# Devise a strategy for filling in all of the missing values in the dataset. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+```{r}
+fillMissing <- data
+for (i in 1:nrow(fillMissing)){
+  if (is.na(fillMissing[i, 1]))
+    fillMissing[i, 1] <- intervalMaxSteps[intervalMaxSteps[, 1]== fillMissing[i, 3], ][, 2]
+}
+```
+
+# Make a histogram of the total number of steps taken each day. 
+```{r}
+completeData <- tapply(fillMissing$steps, fillMissing$date, sum)
+hist(completeData, main = "Total Number of Steps Per Day", xlab = "Steps Per Day")
+```
+
+# Calculate and report the mean and median total number of steps taken per day.
+```{r}
+mean(completeData)
+median(completeData)
+```
+
+# Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+
+```{r}
+weekdayOrWeekend <- function(date) {
+ if (weekdays(as.Date(date)) %in% c("Saturday", "Sunday")) {
+   "Weekend"
+ } else {
+   "Weekday"
+ }
+}
+data$weekdayOrWeekend <- as.factor(sapply(data$date, weekdayOrWeekend))
+```
+
+# Make a panel plot containing a time series plot of the 5-minute interval and the average number of steps taken, averaged across all weekday days or weekend days.
+
+```{r}
+for (type in c("Weekend", "Weekday")) {
+ stepByWeekdayOrWeekend <- aggregate(steps ~ interval, data = data, subset = data$weekdayOrWeekend == type, FUN = mean)
+ plot(stepByWeekdayOrWeekend, type = "l", main = type)
+}
