@@ -1,0 +1,169 @@
+# Weather Events Most Detrimental to Public Health and the Economy
+
+# Synopsis
+
+This report determined that tornadoes were the most detrimental to public health and that flooding was the most detrimental to the economy. The data used in this report is from the NOAA Storm Database and covers the years 1950 to November 2011. 
+
+# Data Processing
+
+Load the data
+```{r}
+stormData <- read.csv("C:/Users/Jasmina/Desktop/1 Lucy/1 RR/PA2/repdata-data-StormData.csv.bz2")
+```
+
+Check the dimensions of the dataset
+```{r}
+dim(stormData)
+```
+
+Check the head of the dataset
+```{r}
+head(stormData)
+```
+
+Subset the data relevant to answer the question: Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health? In order to do this we need these 3 columns: event type, number of fatalities and number of injuries. 
+```{r}
+health <- subset(x=stormData, select=c(EVTYPE, FATALITIES, INJURIES))
+head(health)
+```
+
+Find the total number of deaths and injuries for each event type. 
+```{r}
+library(data.table)
+healthDT <- data.table(health)
+sumByEventType <- healthDT[,list(sumFatalities=sum(FATALITIES), sumInjuries=sum(INJURIES)), by=EVTYPE]
+healthSumByEventType <- as.data.frame(sumByEventType)
+head(healthSumByEventType)
+```
+
+Sum the deaths and injuries to get the total effect for each event type. 
+```{r}
+healthSumByEventType$TotalEffect <- healthSumByEventType$sumFatalities + healthSumByEventType$sumInjuries
+head(healthSumByEventType)
+```
+
+Order the events from most harmful to least harmful according to the total effect.
+```{r}
+sumIndex <- order(healthSumByEventType$TotalEffect, na.last=T, decreasing=T)
+sumSorted <- healthSumByEventType[sumIndex, ]
+head(sumSorted)
+```
+
+The most harmful events to health.
+```{r}
+topHealthQuantile <- quantile(sumSorted$TotalEffect, 0.99)
+topHealth <- subset(sumSorted, TotalEffect >= topHealthQuantile)
+```
+
+Subset the data relevant to answer the question: Across the United States, which types of events have the greatest economic consequences? In order to do this we need: EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP. 
+```{r}
+economic <- subset(x=stormData, select=c(EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP))
+head(economic)
+```
+
+Find out how many different exponent variables there are in PROPDMGEXP and CROPDMGEXP in to find out the damage in dollars. 
+```{r}
+unique(economic$PROPDMGEXP)
+unique(economic$CROPDMGEXP)
+```
+
+Create a new dataframe with the new values.
+```{r}
+newEconomic <- economic
+newEconomic$PROPDMGEXP <- as.numeric(newEconomic$PROPDMGEXP)
+newEconomic$CROPDMGEXP <- as.numeric(newEconomic$CROPDMGEXP)                                
+```
+
+Replace exponents in PROPDMGEXP and get values.
+```{r}
+newEconomic$PROPDMGEXP <- rep(0,nrow(newEconomic))
+propIndex <- grep("[Hh]", economic$PROPDMGEXP)
+newEconomic$PROPDMGEXP[propIndex] <- 100
+propIndex <- grep("[Kk]", economic$PROPDMGEXP)
+newEconomic$PROPDMGEXP[propIndex] <- 1000
+propIndex <- grep("[Mm]", economic$PROPDMGEXP)
+newEconomic$PROPDMGEXP[propIndex] <- 10^6
+propIndex <- grep("[Bb]", economic$PROPDMGEXP)
+newEconomic$PROPDMGEXP[propIndex] <- 10^9
+```
+
+Replace exponents in CROPDMGEXP and get values.
+```{r}
+newEconomic$CROPDMGEXP <- rep(0, nrow(newEconomic))
+propIndex <- grep("[Hh]", economic$CROPDMGEXP)
+newEconomic$CROPDMGEXP[propIndex] <- 100
+propIndex <- grep("[Kk]", economic$CROPDMGEXP)
+newEconomic$CROPDMGEXP[propIndex] <- 1000
+propIndex <- grep("[Mm]", economic$CROPDMGEXP)
+newEconomic$CROPDMGEXP[propIndex] <- 10^6
+propIndex <- grep("[Bb]", economic$CROPDMGEXP)
+newEconomic$CROPDMGEXP[propIndex] <- 10^9
+```
+
+Calculate the crop and property damages in dollars for each event type. 
+```{r}
+newEconomic$PropertyDamage <- newEconomic$PROPDMG * newEconomic$PROPDMGEXP
+newEconomic$CropDamage <- newEconomic$CROPDMG * newEconomic$CROPDMGEXP
+```
+
+Convert to table. 
+```{r}
+library(data.table)
+newEconomicTable <- data.table(newEconomic)
+```
+
+Calculate the total property and crop damages by event type.
+```{r}
+newEconomicTableSum <- newEconomicTable[,list(TotalPropertyDamage=sum(PropertyDamage), TotalCropDamage=sum(CropDamage)), by=EVTYPE]
+newEconomicSum <- as.data.frame(newEconomicTableSum)
+head(newEconomicSum)
+```
+
+Sum the property and crop damages to get the total effect for each event type.
+```{r}
+newEconomicSum$TotalEffect <- newEconomicSum$TotalPropertyDamage + newEconomicSum$TotalCropDamage
+head(newEconomicSum)
+```
+
+Order the events from most harmful to least harmful according to the total effect.
+```{r}
+newEconomicSumOrder <- order(newEconomicSum$TotalEffect, na.last=T, decreasing=T)
+newEconomicSumSorted <- newEconomicSum[newEconomicSumOrder,]
+head(newEconomicSumSorted)
+```
+
+The most harmful events to economy.
+```{r}
+economicQuantile <- quantile(newEconomicSumSorted$TotalEffect, 0.99)
+topEconomic <- subset(newEconomicSumSorted, TotalEffect >= economicQuantile)
+```
+
+# Results
+This graph shows the weather events most detrimental to public health. 
+```{r}
+topHealth$EVTYPE <- factor(topHealth$EVTYPE, levels=topHealth$EVTYPE[order(topHealth$TotalEffect)])
+library(ggplot2)
+library(reshape2)
+topHealth2 <- melt(topHealth[,1:3])
+healthPlot <- ggplot(topHealth2, aes(x=EVTYPE, y=value, fill=factor(variable, labels=c("Fatalities", "Injuries"))))+
+  geom_bar(stat="identity", position="stack")+coord_flip()+
+  ggtitle("Weather Events Most Detrimental to Public Health")+
+  labs(y="Fatalities and Injuries", x="Event Type", fill="")
+healthPlot
+```
+
+This graph shows the weather events most detrimental to the economy. 
+```{r}
+topEconomic$EVTYPE <- factor(topEconomic$EVTYPE, levels=topEconomic$EVTYPE[order(topEconomic$TotalEffect)])
+topEconomic2 <- melt(topEconomic[,1:3])
+economicPlot <- ggplot(topEconomic2, aes(x=EVTYPE, y=value, fill=factor(variable, labels=c("Property Damage", "Crop Damage"))))+
+  geom_bar(stat="identity", position="stack")+coord_flip()+
+  ggtitle("Weather Events Most Detrimental to the Economy")+
+  labs(y="Fatalities and Injuries", x="Event Type", fill="")
+economicPlot
+```
+
+
+
+
+
