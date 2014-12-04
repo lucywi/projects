@@ -1,0 +1,205 @@
+# Supervised Social Media Mining - Lexicon-based sentiment
+
+# Load data
+
+Download positive lexicons from social media mining github account
+```{r}
+download.file("https://github.com/SocialMediaMininginR/pos_words/blob/master/positive-words.txt", destfile = "/Users/Lucy/Desktop/twitter/pos_words.txt", method = "curl") 
+download.file("https://github.com/SocialMediaMininginR/pos_words/blob/master/LoughranMcDonald_pos.csv", destfile = "/Users/Lucy/Desktop/twitter/LoughranMcDonald_pos.txt", method = "curl")
+```
+
+Import positive lexicons
+```{r}
+pos <- scan(file.path("/Users/Lucy/Desktop/twitter/pos_words.txt"), what = 'character', comment.char = ';')
+```
+
+Import financial positive lexicons
+```{r}
+pos_finance <- scan(file.path("/Users/Lucy/Desktop/twitter/LoughranMcDonald_pos.txt"), what = 'character', comment.char = ';')
+```
+
+Combine both files into one 
+```{r}
+pos_all <- c(pos, pos_finance) 
+```
+
+Download negative lexicons from Social Media Mining Github account 
+```{r}
+download.file("https://github.com/SocialMediaMininginR/neg_words/blob/master/negative-words.txt", destfile = "/Users/Lucy/Desktop/twitter/neg_words.txt", method = "curl")
+download.file("https://github.com/SocialMediaMininginR/neg_words/blob/master/LoughranMcDonald_neg.csv", destfile = "/Users/Lucy/Desktop/twitter/LoughranMcDonald_neg.txt", method = "curl")
+```
+
+Import negative lexicons
+```{r}
+neg <- scan(file.path("/Users/Lucy/Desktop/twitter/neg_words.txt"), what = 'character', comment.char = ';')
+```
+
+Import financial negative lexicons
+```{r}
+neg_finance <- scan(file.path("/Users/Lucy/Desktop/twitter/LoughranMcDonald_neg.txt"), what = 'character', comment.char = ';')
+neg_all <- c(neg, neg_finance)
+```
+
+Import Beige Book data from Github and create a new data frame. 
+```{r}
+download.file("https://raw.githubusercontent.com/lucywi/beigebook/master/BB_96_2013.csv", destfile = "/Users/Lucy/Desktop/twitter/BB.csv", method = "curl")
+BB <- read.csv("/Users/Lucy/Desktop/twitter/BB.csv")
+```
+
+# Data Processing
+
+Look at data columns names
+```{r}
+colnames(BB)
+```
+
+Reshape data
+```{r}
+library(reshape)
+cast(BB, year ~ month, length)
+```
+
+Create a new object "bad" that will hold missing datafrom BB
+```{r}
+bad <- is.na( BB) 
+```
+
+Return all missing elements character
+```{r}
+BB[bad] 
+```
+
+Returns zero missing elements. Regular expressions help us clean our data. gsub is a function of the R package grep and replaces content that matches our search. gsub substitutes punctuation (must be surrounded by another set of square brackets) when used in a regular expression with a space.
+```{r}
+BB$text <- gsub('[[:punct:]]', ' ', BB$text) 
+```
+
+gsub substitutes character classes that do not give an output such as feed, backspace and tabspaces with a space ' '. 
+```{r}
+BB$text <- gsub('[[:cntrl:]]', ' ', BB$text) 
+```
+
+gsub substitutes numerical values with digits of one or greater with a space ' '
+```{r}
+BB$text <- gsub('\\ d +', ' ', BB$text) 
+```
+
+Simplify data frame and keep the clean text as well as keep both 
+year and a concatenated version of year/ month/ day and will format the latter
+```{r}
+BB.text <- as.data.frame(BB$text) 
+BB.text$year <- BB$year 
+BB.text$Date <- as.Date(paste(BB$year, BB$month, BB$day, sep = "-" ) , format = "% Y-%m-% d" ) 
+BB.text$Date <- strptime(as.character(BB.text$Date), "% Y-% m-% d") 
+colnames(BB.text) <- c(" text", "year", "date")
+colnames(BB.text)
+
+library(tm) 
+bb_corpus <- Corpus(VectorSource(BB.text)) 
+```
+
+tm_map allows transformation to a corpora getTransformations() shows us what transformations are available via the tm_map function 
+```{r}
+bb_corpus <- tm_map(bb_corpus, content_transformer(tolower)) 
+```
+
+Stemming 
+```{r}
+library(SnowballC)
+bb.text_stm <- tm_map(bb_corpus, stemDocument)
+```
+
+The standard stopwords are useful starting points but we may want to 
+add corpus-specific words. The words below have been added as a consequence of exploring BB.
+# from subsequent steps 
+```{r}
+bb.stopwords <- c(stopwords("SMART"), "district", "districts", "reported", "noted", "city", "cited", 
+                   "activity", "contacts", "chicago", "dallas", "kansas", "san", "richmond", 
+                   "francisco", "cleveland", "atlanta", "sales", "boston", "york", "philadelphia", 
+                   "minneapolis", "louis", "services"," year", "levels", " louis")
+```
+
+Additional cleaning to eliminate words that lack discriminatory power. 
+bb.tf will be used as a control for the creation of our term-document matrix. 
+```{r}
+bb.tf <- list( weighting = weightTf, stopwords = bb.stopwords, removePunctuation = TRUE, tolower = TRUE, minWordLength = 4, removeNumbers = TRUE)
+```
+
+Create a term-document matrix 
+```{r}
+bb_tdm <- TermDocumentMatrix(bb_corpus, control = bb.tf)
+dim(bb_tdm)
+class(bb_tdm)
+```
+
+Sort frequent words to remove stop words
+```{r}
+bb.frequent <- sort( rowSums( as.matrix( bb_tdm)), decreasing = TRUE) 
+```
+
+Sum of frequent words 
+```{r}
+sum( bb.frequent)
+```
+
+Get the 30 most frequent words
+```{r}
+bb.frequent[1:30]
+```
+
+Look at terms with a minimum frequency
+findFreqTerms( bb_tdm, lowfreq = 60)
+
+Let us add some of these positive words: 
+```{r}
+pos.words <- c(pos_all, "spend", "buy", "earn", "hike", "increase", 
+                "increases", "development", "expansion", "raise", 
+                "surge", "add", "added", "advanced", "advances", "boom", 
+                "boosted", "boosting", "waxed", "upbeat", "surge") 
+```
+
+Add the negative ones: 
+```{r}
+neg.words = c(neg_all, "earn", "shortfall", "weak", "fell", 
+               "decreases", "decreases", "decreased", "contraction", 
+               "cutback", "cuts", "drop", "shrinkage", "reduction", 
+               "abated", "cautious", "caution", "damped", "waned", 
+               "undermine", "unfavorable", "soft", "softening", "soften", 
+               "softer", "sluggish", "slowed", "slowdown", "slower", "recession")
+any(pos.words == "strong")
+```
+
+True is returned. Meaning, "strong" is already in our lexicon. 
+
+```{r}
+any(pos.words == "increases")
+```
+
+False is returned. Meaning, "increases" isn't in our lexicon. 
+
+
+Let's create a word cloud. Remove sparse terms from term document matrix with a numeric value of .95; representing the maximal allowed sparsity. 
+```{r}
+BB.95 <- removeSparseTerms( bb_tdm, .95) 
+```
+
+Sort and count the row sums of BB.95 
+```{r}
+BB.rsums <- sort(rowSums(as.matrix( BB.95)), decreasing = TRUE)
+```
+
+Create a data frame with the words and their frequencies. 
+```{r}
+BBdf.rsums <- data.frame(word = names(BB.rsums), freq = BB.rsums) 
+colnames(BBdf.rsums) 
+```
+
+Create a word cloud
+```{r}
+library(wordcloud) 
+library(RColorBrewer)
+bb_wordcloud <- wordcloud(BBdf.rsums$word, BBdf.rsums$freq,
+min.freq = 2500, max.words = 250, random.order = FALSE)
+```
+
+As you can see, "demand" and "prices" are central. In economics demand offers insight into the willingness to buy goods or services. 
