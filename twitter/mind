@@ -1,0 +1,59 @@
+# RUN ON RSTUDIO INSTANCE FOR MORE MEMORY DURING PROCESSING
+
+# Use searchTwitter to find #mind
+library(tm)
+mind <- searchTwitter("#mind", n = 5000)
+
+# conversion from list to data frame 
+mind.df <- do.call( rbind, lapply(mind, as.data.frame)) 
+
+# write to csv; fill in the … with a valid path
+write.csv(mind.df, "~/twitter/lisa/mind.csv")
+
+# build a corpus
+mind_list <- sapply(mind, function(x) x$getText())
+mind_corpus <- Corpus(VectorSource(mind_list))
+
+# create word cloud
+library(NLP)
+library(wordcloud)
+library(RColorBrewer)
+mindWordcloud <- wordcloud(mind_corpus, max.words = 100, random.order = FALSE)
+
+# create a document-term matrix
+mind_corpus <- tm_map(mind_corpus,  content_transformer(tolower))
+mind_corpus <- tm_map(mind_corpus, removePunctuation)
+mind_corpus <- tm_map(mind_corpus, function(x) removeWords(x, stopwords()))
+mind.tdm <- TermDocumentMatrix(mind_corpus) 
+mind.tdm
+
+# most popular words
+findFreqTerms(mind.tdm, lowfreq = 10)
+
+# terms that co-occur
+findAssocs(mind.tdm, 'people', 0.50)
+
+# HIERARCHICAL AGGLOMERATIVE CLUSTERING
+# Remove sparse terms from the term-document matrix 
+mind2.tdm <-removeSparseTerms(mind.tdm, sparse = 0.92) 
+
+# Convert the term-document matrix to a data frame 
+mind2.df <- as.data.frame(inspect(mind2.tdm))
+
+# Scale the data
+mind2.df.scale <- scale(mind2.df)
+
+# Create the distance matrix 
+mind.dist <- dist(mind2.df.scale, method = "euclidean") 
+
+# Cluster the data
+mind.fit <- hclust(mind.dist, method ="ward.D") 
+
+# Visualize the result 
+plot(mind.fit, main ="Cluster - Big Data") 
+
+# An example with five (k = 4) clusters 
+groups <- cutree(mind.fit, k = 4) 
+
+# Dendogram with blue clusters (k = 4). 
+rect.hclust(mind.fit, k = 4, border = "blue")
