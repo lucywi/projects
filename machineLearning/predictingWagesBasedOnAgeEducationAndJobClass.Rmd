@@ -1,0 +1,80 @@
+# Predicting Wages Based on Age, Education, and Job Class
+
+Load ISLR, ggplot2, and caret libraries. Load wage dataset. 
+```{r}
+library(ISLR)
+library(ggplot2)
+library(caret)
+data(Wage)
+summary(Wage)
+```
+
+Build training and test sets. 
+```{r}
+inTrain <- createDataPartition(y=Wage$wage, p=0.7, list=FALSE)
+training <- Wage[inTrain,]
+testing <- Wage[-inTrain,]
+dim(training)
+dim(testing)
+```
+
+Plot the training dataset using a feature plot to see all variables plotted against each other. 
+```{r}
+featurePlot(x=training[,c("age", "education", "jobclass")],
+            y=training$wage,
+            plot="pairs")
+```
+
+Look to see if you can see any relationships to the y variable, which is wage. It looks like there is a relationship to wage and education level. 
+
+
+
+Plot the training dataset using a qplot with color.
+```{r}
+qplot(age, wage, color=jobclass, data=training)
+```
+
+From this plot, you can see that the data points closer to 300 with respect to wages, is in the information jobclass, rather than the industrial jobclass. 
+
+
+
+Add a regression smoother. Plot age v. wage, but add colors with respect to education. 
+```{r}
+qq <- qplot(age, wage, color=education, data=training)
+qq + geom_smooth(method="lm", formula = y ~ x)
+```
+
+Break up wages into 3 groups. 
+```{r}
+library(Hmisc)
+cutWage <- cut2(training$wage, g=3)
+table(cutWage)
+```
+
+Now, use these groups to make a box plot of wage groups vs. age. 
+```{r}
+p1 <- qplot(cutWage, age, data=training, fill=cutWage,
+geom=c("boxplot"))
+p1
+```
+
+Tables that looks at the wage groups and the jobclass. 
+```{r}
+t1 <- table(cutWage, training$jobclass)
+prop.table(t1,1)
+```
+
+Create a density plot. 
+```{r}
+qplot(wage, color=education, data=training, geom="density")
+```
+
+
+
+
+
+
+
+
+
+
