@@ -1,0 +1,45 @@
+# Using the R caret package for Machine Learning 
+
+Load caret and kernlab packages. Load the spam dataset. 
+```{r}
+library(caret)
+library(kernlab)
+data(spam)
+```
+
+Create a training data set using 75% of the spam dataset, leaving 25% of the spam dataset for the testing set. 
+```{r}
+inTrain <- createDataPartition(y=spam$type, p=0.75, list=FALSE)
+training <- spam[inTrain,]
+testing <- spam[-inTrain,]
+dim(training)
+```
+
+Fit a Generalized Linear Model. There is linear separation which is why the "## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred" happens. 
+```{r}
+set.seed(32343)
+modelFit <- train(type ~., data=training, method="glm")
+modelFit
+```
+
+Look at the final model. There is linear separation which is why the "## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred" happens. 
+```{r}
+modelFit <- train(type ~., data=training, method="glm")
+modelFit$finalModel
+```
+
+Predict on new samples.
+```{r}
+predictions <- predict(modelFit, newdata=testing)
+predictions
+```
+
+Evaluate model fit using a confusion matrix. 
+```{r}
+confusionMatrix(predictions, testing$type)
+```
+
+
+
+
+
