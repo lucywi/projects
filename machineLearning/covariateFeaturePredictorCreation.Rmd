@@ -1,0 +1,67 @@
+# Covariate/predictor/feature creation
+
+Two levels of covariate creation: 
+
+1. From raw data to covariate
+Take the raw data and turn it into a covariate that you can use. Raw data usually takes the form of an image, text file, or website. This is difficult to build a predictive model around. The information needs to be summarized either quantitatively or qualitatively to make it usable in a predictive model for a machine learning algorithm. 
+
+2. Transforming tidy covariates
+Take the covariates from step 1 and make them more useful. 
+
+Load ISLR and caret libraries. Load wage dataset. 
+```{r}
+library(ISLR)
+library(caret)
+data(Wage)
+```
+
+Build training and test sets. 
+```{r}
+inTrain <- createDataPartition(y=Wage$wage, p=0.7, list=FALSE)
+training <- Wage[inTrain,]
+testing <- Wage[-inTrain,]
+```
+
+Convert factor variables to indicator variables. The variable jobclass has two variables: Industrial and Information. Some times it's difficult for predictive algorithms to use qualitative data for prediction. Since there are only two variables in jobclass, let's convert them to quantative values, in order to make it easier for a machine learning prediction algorithm to use. 1 = true, 0 = false
+```{r}
+table(training$jobclass)
+dummies <- dummyVars(wage ~ jobclass, data=training)
+head(predict(dummies, newdata=training))
+```
+
+Remove zeros covariates. 
+```{r}
+nsv <- nearZeroVar(training, saveMetrics=TRUE)
+nsv
+```
+The "nzv" column shows that "sex" and "region" can be removed as covariates.
+
+
+Fitting curves using splines and bs function to create polynomial variables on the training set. I only show the 1st 10 rows of polynomials. 
+```{r}
+library(splines)
+bsBasis <- bs(training$age, df=3)
+bsBasis[1:10, ]
+lm1 <- lm(wage ~ bsBasis, data=training)
+plot(training$age, training$wage, pch=19, cex=0.5)
+points(training$age, predict(lm1, newdata=training), col="red", pch=19, cex=0.5)
+```
+
+
+Now, predict the polynomical variables for the test set based on the training set result bsBasis. I only show the 1st 10 rows of predicted polynomials. 
+```{r}
+predict <- predict(bsBasis, age=testing$age)
+predict[1:10, ]
+```
+
+
+
+
+
+
+
+
+
+
+
+
