@@ -1,0 +1,46 @@
+Load ggplot2, caret, and the iris dataset. 
+```{r}
+library(ggplot2)
+library(caret)
+data(iris)
+table(iris$Species)
+```
+
+Build training and test sets. 
+```{r}
+inTrain <- createDataPartition(y=iris$Species, p=0.7, list=FALSE)
+training <- iris[inTrain,]
+testing <- iris[-inTrain,]
+dim(training)
+dim(testing)
+```
+
+Plot the petal width vs. the sepal width
+```{r}
+qplot(Petal.Width, Sepal.Width, color=Species, data=training)
+```
+
+Fit the model using caret
+```{r}
+library(caret)
+modFit <- train(Species ~ ., method="rpart", data=training)
+modFit
+```
+
+Plot the classification tree
+```{r}
+plot(modFit$finalModel, uniform=TRUE,
+     main="Classification Tree")
+text(modFit$finalModel, use.n=TRUE, all=TRUE, cex=.8)
+```
+
+Predict new values
+```{r}
+predict(modFit, newdata=testing)
+```
+
+
+
+
+
+
