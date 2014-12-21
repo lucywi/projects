@@ -1,0 +1,65 @@
+# Inferential Data Analysis: How Vitamin C Affects Tooth Growth in Guinea Pigs
+
+# Synopsis
+The ToothGrowth data in the R datasets package was used for this analysis. The dataset consists of 10 guinea pigs that were dosed at three different levels (0.5, 1, and 2 mg) of orange juice (OJ) or ascorbic acid (VC). The dataset contains 60 observations. The question we'd like to answer is, whether or not Vitamin C affected tooth growth, in the guinea pigs.
+
+# Data Processing
+Load the ToothGrowth data and perform some basic exploratory data analyses. 
+```{r}
+data(ToothGrowth)
+head(ToothGrowth)
+dim(ToothGrowth)
+str(ToothGrowth)
+library(ggplot2)
+ggplot(aes(x = supp, y = len), data = ToothGrowth) +
+    geom_boxplot(aes(fill = supp)) + facet_wrap(~ dose)
+```
+
+The exploratory data analysis would indicate that tooth growth is affected by Vitamin C. As the dosages of orange juice and ascorbic acid increase from 0.5 to 2.0 mg, tooth length increases. 
+
+
+
+
+Provide a basic summary of the data.
+```{r}
+summary(ToothGrowth)
+```
+
+
+
+Use confidence intervals to compare tooth growth by supp and dose. 
+
+T-Test by Supplement
+```{r}
+t.test(len ~ supp, data = ToothGrowth)
+```
+
+T-Test by Dosage
+```{r}
+toothDose0.5_1.0 <- subset(ToothGrowth, dose %in% c(0.5, 1.0))
+toothDose0.5_2.0 <- subset(ToothGrowth, dose %in% c(0.5, 2.0))
+toothDose1.0_2.0 <- subset(ToothGrowth, dose %in% c(1.0, 2.0))
+t.test(len ~ dose, data = toothDose0.5_1.0)
+```
+
+T-Test for Supplement by Dosage
+```{r}
+toothDose0.5 <- subset(ToothGrowth, dose == 0.5)
+toothDose1.0 <- subset(ToothGrowth, dose == 1.0)
+toothDose2.0 <- subset(ToothGrowth, dose == 2.0)
+t.test(len ~ supp, data = toothDose0.5)
+t.test(len ~ supp, data = toothDose1.0)
+t.test(len ~ supp, data = toothDose2.0)
+```
+
+# Results
+Assumptions
+
+1. Randomization
+2. Population sample is representative of total population
+3. All measurements taken are qualitatively and quantitatively accurate. 
+
+Conclusion
+
+Vitamin C does have an increased effect on tooth growth in guinea pigs.
+
