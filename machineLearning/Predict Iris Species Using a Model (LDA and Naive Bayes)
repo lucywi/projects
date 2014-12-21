@@ -1,0 +1,34 @@
+# Predict Iris Species Using a Model (LDA and Naive Bayes)
+
+Load ggplot2, caret, and the iris dataset. 
+```{r}
+library(ggplot2)
+library(caret)
+data(iris)
+names(iris)
+table(iris$Species)
+```
+
+Build training and test sets
+```{r}
+inTrain <- createDataPartition(y=iris$Species, p=0.7, list=FALSE)
+training <- iris[inTrain,]
+testing <- iris[-inTrain,]
+dim(training)
+dim(testing)
+```
+
+Build Predictions Using Linear Discriminant Analysis and Naive Bayes. 
+library(MASS)
+library(NB)
+library(klaR)
+modlda <- train(Species ~ ., method="lda", data=training)
+modnb <- train(Species ~ ., method="nb", data=training)
+plda <- predict(modlda, testing)
+pnb = predict(modnb, testing)
+table(plda, pnb)
+```
+
+
+
+
