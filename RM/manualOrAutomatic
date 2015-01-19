@@ -1,0 +1,40 @@
+# Does a manual or automatic tranmission get better mpg? 
+
+# Synopsis
+The mtcars data in the R datasets package was used for this analysis. The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models). Manual transmission cars get about 7.245 mpg more than automatic transmission cars. 
+
+# Data Processing
+Load the mtcars data and perform some basic exploratory data analyses. 
+```{r}
+data(mtcars)
+head(mtcars)
+dim(mtcars)
+str(mtcars)
+boxplot(mpg~am, data=mtcars)
+```
+
+The help file on the mtcars dataset (?mtcars) indicates that for "am", which represents the type of transmission, 0 = automatic and 1 = manual. The boxplot shows that it looks like a manual transmission gets better mpg than an automatic transmission. 
+
+Fit a linear model to compare automatic and manual transmission mpg. 
+```{r}
+fit <- lm(mpg ~ factor(am), data=mtcars)
+summary(fit)
+```
+Automatic transmissions get approximately 17.147 mpg, whereas manual transmissions get 24.392 mpg. But, whether it's a manual or automatic tranmission only accounts for about 36% of mpg. 
+
+
+Fit a linear model with all variables taken into account with respect to mpg. 
+```{r}
+fitAll <- lm(mpg ~., data=mtcars)
+summary(fitAll)
+```
+
+
+Residuals and Diagnostics
+```{r}
+par(mfrow=c(2,2))
+plot(fit)
+```
+
+# Results
+Whether a car has a manual or automatic transmission has an effect on the car's mpg, with manual transmissions averaging 7.245 more mpg than automatics. That said, there are other variables that effect mpg as well, such as the weight of the car. 
