@@ -1,0 +1,80 @@
+# Predict Correct Execution of a Biceps Curl
+
+# Synopsis
+Training and test datasets were provided by the Human Activity Recognition Project, http://groupware.les.inf.puc-rio.br/har. The following is a description from the website, of how the weight lifting exercise dataset was collected and defines variables A-E. 
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes. Participants were supervised by an experienced weight lifter to make sure the execution complied to the manner they were supposed to simulate. The exercises were performed by six male participants aged between 20-28 years, with little weight lifting experience. We made sure that all participants could easily simulate the mistakes in a safe and controlled manner by using a relatively light dumbbell (1.25kg).
+
+# Data Processing
+Load ISLR, ggplot2, caret, and randomForest libraries.   
+```{r}
+library(ISLR)
+library(ggplot2)
+library(caret)
+library(randomForest)
+```
+
+```{r}
+train <- read.csv("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv")
+test <- read.csv("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv")
+```
+
+Create a data partition within the training set in order to create subtraining and subtesting data sets. The subtraining and subtesting data sets will be used for cross validation, before using the prediction algorithm on the original test set.  
+```{r}
+InTrain <- createDataPartition(train$classe, p = 0.6, list = FALSE)
+subtrain <- train[InTrain, ]
+subtest <- train[-InTrain, ]
+```
+
+Remove the first seven columns because they contain information not relevant to creation of a good prediction model. 
+```{r}
+remove <- 1:7
+subtrain <- subtrain [,-remove]
+```
+
+Remove covariates that are near zero value. 
+```{r}
+subtrain <- subtrain[ ,-nearZeroVar(subtrain)]
+```
+
+Remove covariates with more than 50% NAs
+```{r}
+NAs <- sapply(colnames(subtrain), function(x) if(sum(is.na(subtrain[, x])) > 0.50 * nrow(subtrain)) {
+  return (TRUE)
+    } 
+    else {
+      return(FALSE)
+  }
+)
+subtrain <- subtrain[ ,!NAs]
+```
+
+Fit the model using the random forest method 
+```{r}
+rfFit <- randomForest(factor(classe) ~., data=subtrain, importance = TRUE)
+rfPredict <- predict(rfFit, newdata = subtest)
+confusionMatrix(rfPredict, subtest$classe)
+```
+
+# Results
+The acurracy of the random forest model is 99.48% on the subtest data. Now, it used on the original test set to predict whether the exercise classe will be A, B, C, D, or E. 
+
+Predict on test set
+```{r}
+testPredict <- predict(rfFit, newdata = test)
+testPredict
+```
+
+
+
+
+
+
+
+
+
+
+
+
