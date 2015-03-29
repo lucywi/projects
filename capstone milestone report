@@ -1,0 +1,114 @@
+### JHU/Coursera Capstone Milestone Report
+
+#### Synopsis
+The end goal of the JHU/Coursera capstone project is to create a next word prediction algorithm. The prediction algorithm will be incorporated into a Shiny app, where a user can enter text and the next word will be predicted for the user. This milestone report includes an exploratory data analyses of the data that will be utilized to build the next word prediction algorithm. It was downloaded from https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip. The US twitter, blogs, and news files were utilized. 
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(R.utils)
+library(stringi)
+library(tm)
+library(RWeka)
+library(SnowballC)
+library(qdap)
+library(ggplot2)
+```
+
+```{r, echo=FALSE}
+dirTwitter <- "/Users/Lucy/Desktop/projects/1 capstone/final/en_US/en_US.twitter.txt"
+
+dirBlogs <- "/Users/Lucy/Desktop/projects/1 capstone/final/en_US/en_US.blogs.txt"
+
+dirNews <- "/Users/Lucy/Desktop/projects/1 capstone/final/en_US/en_US.news.txt"
+```
+
+#### Load data
+```{r}
+twitter <- readLines(dirTwitter, skipNul = TRUE)
+blogs <- readLines(dirBlogs, skipNul = TRUE)
+news <- readLines(dirNews, skipNul = TRUE)
+```
+
+
+#### Explore and clean the data
+Get the line count for each file. The twitter, blogs, and news files have 2360148, 899288, and 1010242 lines respectively.
+```{r}
+stri_stats_general(twitter)
+stri_stats_general(blogs)
+stri_stats_general(news)
+```
+
+
+Get the word count for each file. The twitter, blogs, and news files have 30433295, 38221261, and 35710845 words respectively.  
+```{r}
+sum(sapply(gregexpr("\\W+", twitter), length))
+sum(sapply(gregexpr("\\W+", blogs), length))
+sum(sapply(gregexpr("\\W+", news), length))
+```
+
+
+Combine the data from all three files.
+```{r}
+twitterBlogs <- append(twitter, blogs)
+allData <- append(twitterBlogs, news)
+```
+
+
+Because the file sizes are so large, use a 1% randomized sample from the combined file. 
+```{r}
+set.seed(123)
+dataSample <- sample(allData, length(allData) * 0.01)
+write.csv(dataSample, file = "/Users/Lucy/Desktop/projects/1 capstone/final/en_US/dataSample.txt")
+```
+
+
+Make a corpus using the combined file.
+```{r}
+corpus <- Corpus(VectorSource(dataSample))
+```
+
+Clean the corpus by removing punctuation, English stopwords, white space, numbers, and convert all words to lower case. 
+```{r}
+corpus <- tm_map(corpus, content_transformer(tolower))
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, function(x) removeWords(x, stopwords("english")))
+corpus <- tm_map(corpus, stripWhitespace)
+corpus <- tm_map(corpus, removeNumbers)
+corpusDF <- data.frame(text=unlist(sapply(corpus, '[',"content")),stringsAsFactors=FALSE)
+```
+
+
+
+Create bigrams and trigrams from the clean corpus. Bigrams are two word sequences and trigrams are three word sequences. 
+```{r, echo=FALSE}
+options(mc.cores=1)
+```
+```{r}
+bigrams <- NGramTokenizer(corpusDF, Weka_control(min = 2, max = 2))
+trigrams <- NGramTokenizer(corpusDF, Weka_control(min = 3, max = 3))
+```
+
+
+
+Find the frequencies of bigrams and trigrams and sort them in descending order. 
+```{r}
+biFreq <- data.frame(table(bigrams))
+triFreq <- data.frame(table(trigrams))
+biSort <- biFreq[order(biFreq$Freq, decreasing = TRUE),]
+triSort <- triFreq[order(triFreq$Freq, decreasing = TRUE),]
+head(biSort)
+head(triSort)
+```
+
+
+Graph the top 20 bigrams and trigrams that occur in the corpus. 
+```{r}
+bigram20 <- barplot(biSort[1:20,]$Freq, names.arg = biSort[1:20,]$bigrams, cex.names=0.7, las=2, main="Top 20 bigrams")
+
+
+trigram20 <- barplot(triSort[1:20,]$Freq, names.arg = triSort[1:20,]$trigrams, cex.names=0.4, las=2, main="Top 20 trigrams")
+```
+
+#### Next steps
+A prediction algorithm will be built to predict the next word in a sequence of words. Then, a Shiny app will be built with the algorithm embedded into it. It will allow the user to enter text and will predict the next word for the user.
+Status API Training Shop Blog About
