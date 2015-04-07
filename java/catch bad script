@@ -1,0 +1,47 @@
+package badscriptcaught;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		January 10, 2014
+Filename: 	
+Purpose: 	This application will prompt a user for an interger and display the name in the requested position of an array.
+                If the enter uses a number that is out of range, an error message will be displayed. Note to self: 
+                Some good example code to follow on p. 611.
+*/
+
+import java.util.*;
+
+public class BadScriptCaught {
+
+    public static void main(String[] args) {
+
+     String[] firstNames = new String[10];
+
+     firstNames[0] = "Lucy";
+     firstNames[1] = "Victoria";
+     firstNames[2] = "Andrew";
+     firstNames[3] = "Matthew";
+     firstNames[4] = "Ellie";
+     firstNames[5] = "Colleen";
+     firstNames[6] = "Jasmina";
+     firstNames[7] = "Lisa";
+     firstNames[8] = "Stephanie";
+     firstNames[9] = "Williams";
+     
+     Scanner keyboard = new Scanner(System.in);
+     int x;
+     {
+         try
+         {       
+             System.out.println("Enter an number and I will display the number associated with it >> ");
+             x = Integer.parseInt(keyboard.nextLine());
+             System.out.println("The name is: " + firstNames[x]);
+             System.out.println();
+         }
+         catch(ArrayIndexOutOfBoundsException error)
+         {
+          System.out.println("The number you entered is out of range, please enter a number between 0 and 9");
+         }  
+      }
+   }
+}
