@@ -1,0 +1,62 @@
+package displayselectedidnumbers;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		January 22, 2014
+Filename: 	WriteEmployeeList
+Purpose: 	This application allows you to enter any ID number and displays the first and last name 
+                for the record stored in the employee file with the given ID number.
+                p. 716
+*/  
+
+import java.nio.file.*;
+import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.ByteBuffer;
+import  static java.nio.file.StandardOpenOption.*;
+import java.util.Scanner;
+
+public class DisplaySelectedIDNumbers {
+    private static int x;
+
+    public static void main(String[] args) {
+            Scanner keyBoard =  new Scanner(System.in);
+            Path file = 
+                Paths.get("C:\\Users\\Guest\\Desktop\\Lucy\\210\\Week 2 Day 2\\Employees.txt");
+            String s = "000,	      ,        " + System.getProperty("line.separator");
+            final  int RECSIZE = s.length();
+            byte[] data = s.getBytes();
+            ByteBuffer buffer = ByteBuffer.wrap(data);
+            FileChannel fc =  null;
+            String idString;
+            int id;
+            String firstName;
+            String lastName;
+            final int QUIT = 999;
+            try
+            {
+                fc = (FileChannel)Files.newByteChannel(file, READ, WRITE);
+                System.out.print("Enter employee ID number or " +
+                QUIT + " to quit >> ");
+                idString = keyBoard.nextLine();
+                while(!idString.equals(QUIT))
+                {
+                    id = Integer.parseInt(idString);
+                    buffer= ByteBuffer.wrap(data);
+                    fc.position(id * RECSIZE);
+                    fc.read(buffer);
+                    s =  new String(data);
+                    System.out.println("ID #" + id + s);
+                    System.out.print("Enter employee ID number or " +
+                    QUIT + " to quit >> ");
+                    idString = keyBoard.nextLine();
+                }
+                fc.close();
+             }   
+             catch (Exception e)
+             {
+                 System.out.println("Error message: " + e);
+             }
+         }
+}
+
