@@ -1,0 +1,41 @@
+package filestatistics2;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		January 22, 2014
+Filename: 	FileStatistics2
+Purpose: 	This application will compare a the size of two files. One text file and one word file with the same content. 
+                p. 686
+*/ 
+
+import java.nio.file.*;
+import java.nio.file.attribute.*;
+import java.io.IOException;
+
+public class FileStatistics2 {
+
+    public static void main(String[] args) {
+      Path f1 =
+         Paths.get("C:\\Users\\Guest\\Desktop\\Lucy\\210\\Week 2 Day 1\\quote.docx");
+      Path f2 =
+         Paths.get("C:\\Users\\Guest\\Desktop\\Lucy\\210\\Week 2 Day 1\\quote.txt");
+      try
+      {
+          BasicFileAttributes attr1 =
+            Files.readAttributes(f1, BasicFileAttributes.class);
+          BasicFileAttributes attr2 =
+            Files.readAttributes(f2, BasicFileAttributes.class);
+          System.out.println("File1 size is " + attr1.size());
+          System.out.println("File2 size is " + attr2.size());
+          if(attr1.size() > attr2.size())
+              System.out.println("file1 is larger than file2 ");
+          else
+              if (attr2.size() > attr1.size())
+                System.out.println("file2 is larger than file1 ");  
+      }
+      catch(IOException e)
+      {
+      System.out.println("IO Exception");
+      }
+   }
+}
