@@ -1,0 +1,48 @@
+package displaysavedemployeelist;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		January 22, 2014
+Filename: 	WriteEmployeeList
+Purpose: 	This application reads a written file of employee ID numbers, first names, and
+                last names. 
+                p. 700
+*/  
+
+import java.nio.file.*;
+import java.io.*;
+
+public class DisplaySavedEmployeeList {
+    
+    @SuppressWarnings("empty-statement")
+    public static void main(String[] args) {
+        Path file = 
+                Paths.get("C:\\Users\\Guest\\Desktop\\Lucy\\210\\Week 2 Day 2\\Employees.txt");
+        String[] array = new String[3];
+        String s = "";
+        String delimiter = ",";
+        int x;
+        try
+        {
+            InputStream input =  new
+                BufferedInputStream(Files.newInputStream(file));
+            BufferedReader reader =  new
+                BufferedReader(new InputStreamReader(input));
+            s = reader.readLine();
+            while(s !=  null)
+            {
+                array = s.split(delimiter);
+                for(x = 0; x < array.length; ++x)
+                    System.out.print(array[x] + "    ");
+                System.out.println();
+                s = reader.readLine();
+            }
+            reader.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println("Message: " + e);
+        }     
+    }
+}
+
