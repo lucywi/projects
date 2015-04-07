@@ -1,0 +1,54 @@
+package meanmedianhandleexception;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		January 11, 2014
+Filename: 	Mean Median Handle Exception
+Purpose: 	This application will prompt a user to enter five integers and then displays the values, their mean, 
+                and their median. If the user doesn't enter an integer, an excpetion is thrown and an error message is displayed. 
+                Note to self: Some good example code to follow on p. 450, 453, 466-467.
+*/
+
+import java.util.*;
+class MeanMedianHandleException
+{
+    public static void main(String[] args)
+    {
+        int[] someNums = new int[5];
+        int comparisonsToMake = someNums.length - 1;
+        Scanner keyboard = new Scanner(System.in);
+        int a, b, temp;
+        
+        for(a = 0; a < someNums.length; ++a)
+        {
+            System.out.print("Enter number " + (a + 1) + ">> ");
+            someNums[a] = keyboard.nextInt();        
+        }    
+        display(someNums, 0);
+             
+        for(a = 0; a < someNums.length - 1; ++a)
+        {
+            for (b = 0; a < comparisonsToMake; ++b)
+            {
+                if(someNums[b] > someNums[b + 1])
+                {
+                    temp = someNums[b];
+                    someNums[b] = someNums[b + 1];
+                    someNums[b + 1] = temp;
+                }
+            }
+            display(someNums, (a + 1));
+            --comparisonsToMake;
+        }
+     }
+    
+    public static void display(int[] someNums, int a)
+    {
+        for(int x = 0; x < someNums.length; ++x)
+        System.out.print(someNums[x] + " ");
+        System.out.println();
+        System.out.print("The median is: " + someNums[2]);
+        System.out.println();
+        System.out.print("The mean is: " + ((someNums[0] + someNums[1] + someNums[2] + someNums[3] + someNums[4]) / 5));
+        System.out.println();
+    }
