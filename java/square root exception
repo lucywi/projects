@@ -1,0 +1,34 @@
+package sqrtexception;
+
+import java.util.*;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		January 11, 2014
+Filename: 	
+Purpose: 	This application will prompt a user for an integer and then attempt to use the Math sqrt() on it.
+                If it is a negative value and the square root can't be taken, an appropriate message will be displayed. 
+                Note to self: Some good example code to follow on p. .
+*/
+public class SqrtException {
+
+    public static void main(String[] args) {
+             
+     Scanner keyboard = new Scanner(System.in);
+     int x;
+
+     try
+     {
+     System.out.print("Enter a positive number >> ");
+     x = Integer.parseInt(keyboard.nextLine());
+     if (x > 0)
+     System.out.println("The square root of " + x + " is " + Math.sqrt(x));
+     System.out.println();
+     }
+     catch(ArithmeticException mistake)
+     {
+     System.out.println("Please enter a number greater than 0. ");
+     }
+   }
+}
+
