@@ -1,0 +1,40 @@
+package negativearray;
+
+import java.util.*;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		January 10, 2014
+Filename: 	
+Purpose: 	This application will prompt a user for an interger and then attempt to declare an array using the entered size.
+                If an array is created successfully, the user enters a nonnumeric or a negative, the appropriate message will be displayed. 
+                Note to self: Some good example code to follow on p. 660.
+*/
+
+public class NegativeArray {
+    
+    public static void main(String[] args) {
+        
+     Scanner keyboard = new Scanner(System.in);
+     int x;
+
+     try
+     {
+     System.out.print("The number you enter will be used to create an array >> ");
+     x = Integer.parseInt(keyboard.nextLine());     
+     int[] numbers = new int[x];
+     System.out.println("You have created an array with " + (x + 1) + " elements");
+     System.out.println();
+     }
+     catch(NegativeArraySizeException error)
+     {
+          System.out.println("The array was not created. Please enter a number greater than zero.");
+     }
+     catch(NumberFormatException error)
+     {
+          System.out.println("The array was not created. Please enter a number greater than zero.");
+     }
+  }
+}
+
+
