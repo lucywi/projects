@@ -1,0 +1,7 @@
+Executive Summary
+
+Get movie trailer ids from tmdb and youtube
+Get basic stats from youtube trailers like: total views, likes, dislikes, and favorites
+Get youtube comments for trailers
+Clean up xml, extract content of text tags, write to a file
+Use the movie_text.txt file and scikit-learn to do sentiment analysis on movie comments
