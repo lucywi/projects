@@ -1,0 +1,43 @@
+package jfontsizes;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		February 5, 2014
+Filename: 	JFontSizes
+Purpose: 	This application will display a phrase in every font size from 6 through 20. 
+                p. 915
+*/  
+
+import javax.swing.*;
+import java.awt.*;
+
+public class JFontSizes extends JFrame{
+    String trailerQuote = new String("In a world...");
+    int ascent, descent, height, leading;
+    int x = 20, y = 50;
+    int fontSize = 6;
+    final int LIMIT = 20;
+            
+public JFontSizes(){
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+}
+
+public void paint(Graphics pen){
+
+    super.paint(pen);
+    Font timesPlain = new Font("Times New Roman", Font.PLAIN, fontSize);
+    while(fontSize <= LIMIT)
+        {
+            pen.setFont(timesPlain);
+            pen.drawString(trailerQuote, x, y);
+            pen.drawString(trailerQuote, x, y += LIMIT);
+        }
+}
+ 
+public static void main(String[] args) {
+        JFontSizes frame  =  new  JFontSizes();
+        frame.setSize(250,  350);
+        frame.setVisible(true);
+    }
+    
+}
