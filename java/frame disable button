@@ -1,0 +1,49 @@
+package jframedisablebutton2;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		January 22, 2014
+Filename: 	FileStatistics2
+Purpose: 	This application will instantiate a JFrame that contains a JButton. The JButton will be disabled after the user clicks it 8 times.  
+                p. 
+*/
+
+import  javax.swing.*;
+import  java.awt.*;
+import  java.awt.event.*;
+
+public class JFrameDisableButton2 extends JFrame implements ActionListener{
+    JButton clickButton = new JButton("Click button to continue");
+    final int WIDTH = 500;
+    final int HEIGHT = 500;
+    int x = 0;
+    final int LIMIT = 8;
+
+public JFrameDisableButton2()
+    {
+        setSize(WIDTH, HEIGHT);
+        setLayout (new FlowLayout());
+        add(clickButton);
+        clickButton.addActionListener(this);
+    }
+
+public void actionPerformed(ActionEvent e)
+    {
+       while(x < LIMIT)
+       {
+            clickButton.setText("You can click this button 8 times");
+            clickButton.setEnabled(true);
+            x++;
+       }
+            clickButton.setText("That's enough!");
+    }
+
+public static void main( String [] args)
+    {
+        JFrameDisableButton2 fdb = new JFrameDisableButton2();
+        fdb.setVisible(true);
+    }// end of main
+
+}// end of class
+
+
