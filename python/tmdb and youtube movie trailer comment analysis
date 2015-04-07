@@ -1,7 +1,127 @@
-Executive Summary
+# Executive Summary
 
-Get movie trailer ids from tmdb and youtube
-Get basic stats from youtube trailers like: total views, likes, dislikes, and favorites
-Get youtube comments for trailers
-Clean up xml, extract content of text tags, write to a file
-Use the movie_text.txt file and scikit-learn to do sentiment analysis on movie comments
+# Get movie trailer ids from tmdb and youtube
+# Get basic stats from youtube trailers like: total views, likes, dislikes, and favorites
+# Get youtube comments for trailers
+# Clean up xml, extract content of text tags, write to a file
+# Use the movie_text.txt file and scikit-learn to do sentiment analysis on movie comments
+
+
+# Get movie ids from tmdb and youtube
+# install and import the tmdb simple python wrapper for the movie database (tmdb)
+!pip install tmdbsimple
+import tmdbsimple as tmdb
+
+# import urllib2
+import urllib2 as urllib2
+
+# tmdb api key
+tmdb.API_KEY = 'xxxx'
+
+# search tmdb for movie ids in portent csv doc, did 1st 5 to save time: 
+# insurgent, furious 7, ex machina, unfriended, age of ultron
+search = tmdb.Search()
+response = search.movie(query='Insurgent')
+for s in search.results:
+    print(s['title'], s['id'])
+response = search.movie(query='Furious 7')
+for s in search.results:
+    print(s['title'], s['id'])
+response = search.movie(query='Ex Machina')
+for s in search.results:
+    print(s['title'], s['id'])
+response = search.movie(query='Unfriended')
+for s in search.results:
+    print(s['title'], s['id'])
+response = search.movie(query=' Avengers: Age of Ultron')
+for s in search.results:
+    print(s['title'], s['id'])  
+    
+# manually created the tmdb api call , inserting tmdb movie id from tmdb search 
+# insurgent tmdb movie id = 262500
+response = urllib2.urlopen('https://api.themoviedb.org/3/movie/262500/videos?api_key=f67a5ad0361aba9a050c63006ee1de65')
+html = response.read()
+print html 
+
+# manually created the youtube api call, inserting the youtube movie id aka "key" from tmdb api call response
+# insurgent youtube movie id = sX9-l0iO5w4
+# used google api explorer to construct youtube api call without oauth (oauth gave me problems, workaround)
+# google api explorer: https://developers.google.com/apis-explorer/#p/youtube/v3/youtube.videos.list
+# populate api explorer fields : part = statistics, id = "key" from tmdb api response, youtube api key from google developer's console
+# youtube movie id = sX9-l0iO5w4
+response = urllib2.urlopen('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=sX9-l0iO5w4&key=AIzaSyAGH85tGfM1SVr1AftmYCZcupFlM8HqQB8')
+html = response.read()
+print html 
+
+
+# Get youtube comments for each movie
+# get video comments insurgent
+response = urllib2.urlopen('https://gdata.youtube.com/feeds/api/videos/sX9-l0iO5w4/comments')
+html = response.read()
+file = open('insurgent', 'a')
+file.write(html)
+file.close()
+
+# Clean up xml, extract content of text tags, write to a file
+! pip install beautifulsoup4
+from bs4 import BeautifulSoup
+import re, cgi
+
+# divergent comments, parsable xml
+soup = BeautifulSoup(''.join(insurgent))
+print soup.prettify()
+
+# divergent comments, find all content tags
+soup.findAll('content')
+
+# Use the movie_text.txt file and scikit-learn to do sentiment analysis on movie comments
+# install scikit-learn, numpy, scipy
+!pip install scikit-learn
+!pip install numpy
+!pip install scipy
+import numpy as np
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+import sklearn.cross_validation
+from sklearn.cross_validation import train_test_split
+import sklearn.feature_extraction.text
+import sklearn.metrics
+import sklearn.naive_bayes
+from sklearn.naive_bayes import MultinomialNB
+
+names = ['text', 'label']
+
+# read in text data
+data = pd.read_table('movie_text.txt', sep="/t", names=names)
+engine='python'
+
+# split the data intro training and testing sets
+train, test = sklearn.cross_validation.train_test_split(data, train_size=0.7)
+train_data, test_data = pd.DataFrame(train, columns=names), pd.DataFrame(test, columns=names)
+
+# vectorization 
+vectorizer = sklearn.feature_extraction.text.CountVectorizer(stop_words='english')
+train_matrix = vectorizer.fit_transform(train_data['text'])
+test_matrix = vectorizer.transform(test_data['text'])
+positive_cases_train = (train_data['label'] == 'POS')
+positive_cases_test = (test_data['label'] == 'POS')
+
+# train classifier
+classifier = sklearn.naive_bayes.MultinomialNB()
+classifier.fit(train_matrix, positive_cases_train)
+
+# predict sentiment for text set
+predicted_sentiment = classifier.predict(test_matrix)
+predicted_probs = classifier.predict_proba(test_matrix)
+
+# diagnostics
+accuracy = classifier.score(test_matrix, positive_cases_test)
+precision, recall, f1, _ = sklearn.metrics.precision_recall_fscore_support(
+    positive_cases_test, predicted_sentiment)
+print("")
+print("Accuracy = ", accuracy)
+print("Precision = ", precision)
+print("Recall = ", recall)
+print("F1 Score = ", f1)
+
+
