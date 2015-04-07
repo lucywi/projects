@@ -1,0 +1,39 @@
+package jlandmarkframe;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		January 27, 2014
+Filename: 	JLandmarkFrame
+Purpose: 	This application places a JButton in each region of a border layour, and places the name of an appropriate 
+                United States landmark on each JButton.
+                p. 810
+*/
+
+import  javax.swing.*;
+import  java.awt.*;
+
+public class JLandmarkFrame extends JFrame{
+        private  JButton  north  = new  JButton("Empire State Building");
+        private  JButton  south  = new  JButton("The Alamo");
+        private  JButton  east  = new  JButton("Statue of Liberty");
+        private  JButton  west  = new  JButton("Grand Canyon");
+        private  JButton  center  = new  JButton("St. Louis Arch");
+        private  Container  con  =  getContentPane();
+        public  JLandmarkFrame()
+        {
+            con.setLayout(new  BorderLayout());
+            con.add(north,  BorderLayout.NORTH);
+            con.add(south,  BorderLayout.SOUTH);
+            con.add(east,  BorderLayout.EAST);
+            con.add(west,  BorderLayout.WEST);
+            con.add(center,  BorderLayout.CENTER);
+            setSize(400,  150);
+        }
+        public static void  main(String[]  args)
+        {
+            JLandmarkFrame frame  = new  JLandmarkFrame();
+            frame.setVisible(true);
+        }
+    
+}
+
