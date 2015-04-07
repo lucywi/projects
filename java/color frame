@@ -1,0 +1,62 @@
+package jcolorframe;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		January 27, 2014
+Filename: 	JColorFrame
+Purpose: 	This application places a JButton in each the center of a border layout. Each time the user clicks the JButton, 
+                change the background color in one of the other regions.
+                p. 804, 812,
+*/
+
+import  javax.swing.*;
+import  java.awt.*;
+import  java.awt.event.*;
+import java.awt.Color;
+
+public class JColorFrame extends JFrame implements ActionListener{
+        private  JButton  pressMe  = new  JButton("Press  Me");
+        private JPanel southPanel;
+        private JPanel nouthPanel;
+        private JPanel eastPanel;
+        private JPanel westPanel;
+        private  Container  con  =  getContentPane();
+        private  BorderLayout  layout  = new  BorderLayout();
+        
+public JColorFrame()
+{
+    super("Color change");
+    con.setLayout(layout);
+    add(pressMe, BorderLayout.CENTER);
+    pressMe.addActionListener(this);
+    southPanel  = new JPanel();
+    southPanel.setBackground(Color.BLUE);
+    add(southPanel, BorderLayout.SOUTH);
+    nouthPanel  = new JPanel();
+    nouthPanel.setBackground(Color.BLUE);
+    add(nouthPanel, BorderLayout.NORTH);
+    eastPanel  = new JPanel();
+    eastPanel.setBackground(Color.BLUE);
+    add(eastPanel, BorderLayout.EAST);
+    westPanel  = new JPanel();
+    westPanel.setBackground(Color.BLUE);
+    add(westPanel, BorderLayout.WEST);
+    setSize(300,  300);
+}
+        
+public void  actionPerformed(ActionEvent event)
+{
+    Object  source  =  event.getSource();
+    if (source  == pressMe)
+        southPanel.setBackground(Color.RED);
+    else
+        southPanel.setBackground(Color.BLUE);
+}
+
+    public static void main(String[] args) {
+        JColorFrame frame = new JColorFrame();
+        frame.setVisible(true);
+    }
+    
+}
+
