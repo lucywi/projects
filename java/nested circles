@@ -1,0 +1,40 @@
+package jnestedcircles;
+
+/*
+Programmer: 	Lucy Williams
+Date: 		February 5, 2014
+Filename: 	JNestedCircles
+Purpose: 	This application will display 15 nested circles.  
+                p. 
+*/
+
+import javax.swing.*;
+import java.awt.*;
+
+public class JNestedCircles extends JFrame{
+
+public void paint(Graphics gr)
+   {
+     super.paint(gr);
+     int count;
+     final int NUMCIRCLES = 8;
+     final int INC = 20;
+     int x = 40;
+     int y = 40;
+     int width = 300, height = 300;
+     for(count = 0; count < NUMCIRCLES; ++count)
+     {
+       gr.drawOval(x, y, width, height);
+       x += INC;
+       y += INC;
+       width -= INC * 2;
+       height -= INC * 2;
+     }     
+   }
+   public static void main(String[] args)
+   {
+      JNestedCircles frame = new JNestedCircles();
+      frame.setSize(380, 380);
+      frame.setVisible(true);
+   }
+}
